@@ -12,7 +12,7 @@ app.use(express.urlencoded({ extended: true }));
 app.use(
   cors({
     credentials: true,
-    origin: "https://snapstory-ds.vercel.app/",
+    origin: "https://snapstory-ds.vercel.app",
   })
 );
 

@@ -14,6 +14,11 @@ class StoryRepository extends CrudRepository {
     const response = await Story.find({ bookmarkUser: { $in: [userId] } });
     return response;
   }
+  async getUserStory(userId) {
+    const response = await Story.find({ userId: userId });
+
+    return response;
+  }
 }
 
 export default StoryRepository;

@@ -76,7 +76,7 @@ const toggleBookmarkedStory = async (req, res) => {
       req.params.storyId,
       req.user._id
     );
-    SuccessResponse.message = "Successfully bookmarked the story.";
+    SuccessResponse.message = "Successfully toggled bookmark.";
     SuccessResponse.data = user;
     return res.status(StatusCodes.OK).json(SuccessResponse);
   } catch (error) {
@@ -86,7 +86,6 @@ const toggleBookmarkedStory = async (req, res) => {
 };
 
 export const getBookmarkStories = async (req, res) => {
-  console.log(req.user);
   try {
     const bookmarkStories = await storyService.getUserWithBookmarkStories(
       req.user._id
@@ -115,6 +114,18 @@ const toggleLike = async (req, res) => {
   }
 };
 
+const getUserStories = async (req, res) => {
+  try {
+    const stories = await storyService.getUserStories(req.user._id);
+    SuccessResponse.message = "Sucessfully fetch user stories.";
+    SuccessResponse.data = stories;
+    return res.status(StatusCodes.OK).json(SuccessResponse);
+  } catch (error) {
+    ErrorResponse.error = error;
+    return res.status(error?.statusCode).json(ErrorResponse);
+  }
+};
+
 export default {
   createStory,
   getAllStory,
@@ -124,4 +135,5 @@ export default {
   toggleBookmarkedStory,
   getBookmarkStories,
   toggleLike,
+  getUserStories,
 };

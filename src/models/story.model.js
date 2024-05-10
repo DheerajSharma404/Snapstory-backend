@@ -28,6 +28,14 @@ const StorySchema = new mongoose.Schema(
         },
       },
     ],
+    isLiked: {
+      type: Boolean,
+      default: false,
+    },
+    isBookmarked: {
+      type: Boolean,
+      default: false,
+    },
     likes: [
       {
         type: mongoose.Schema.Types.ObjectId,

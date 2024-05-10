@@ -1,15 +1,15 @@
 import { StatusCodes } from "http-status-codes";
-import jwt from "jsonwebtoken";
-import { ServerConfig } from "../config/index.js";
-import { User } from "../models/index.js";
+import { UserService } from "../services/index.js";
 import { ErrorResponse } from "../utils/common/index.js";
 import AppError from "../utils/error/app.error.js";
 import { userValidationSchema } from "../validators/user.validations.js";
 
+const userService = new UserService();
+
 const validateUserSignUpRequest = (req, res, next) => {
   const validation = userValidationSchema.safeParse(req.body);
   if (!validation.success) {
-    ErrorResponse.message = " User sign up validation failed.";
+    ErrorResponse.message = "User sign up validation failed.";
     ErrorResponse.error = new AppError(
       validation.error.formErrors.fieldErrors,
       StatusCodes.BAD_REQUEST
@@ -23,6 +23,7 @@ const validateUserSignUpRequest = (req, res, next) => {
 const validateUserSignInRequest = (req, res, next) => {
   const validation = userValidationSchema.safeParse(req.body);
   if (!validation.success) {
+    ErrorResponse.message = "User sign in validation failed.";
     ErrorResponse.error = new AppError(
       validation.error.formErrors.fieldErrors,
       StatusCodes.BAD_REQUEST
@@ -33,25 +34,16 @@ const validateUserSignInRequest = (req, res, next) => {
 };
 
 const checkAuth = async (req, res, next) => {
-  if (!req.cookies || !req.cookies["x-access-token"]) {
-    throw new AppError("No auth token provided.", StatusCodes.UNAUTHORIZED);
+  try {
+    const user = await userService.isAuthenticated(
+      req.headers["x-access-token"]
+    );
+    req.user = user;
+    next();
+  } catch (error) {
+    ErrorResponse.error = error;
+    return res.status(error.statusCode).json(ErrorResponse);
   }
-
-  const token = req.cookies["x-access-token"];
-
-  const decoded = jwt.verify(token, ServerConfig.JWT_SECRET);
-
-  if (!decoded) {
-    throw new AppError("Invalid token", StatusCodes.UNAUTHORIZED);
-  }
-
-  const user = await User.findById(decoded.id);
-
-  if (!user) {
-    throw new AppError("User not found.", StatusCodes.UNAUTHORIZED);
-  }
-  req.user = user;
-  next();
 };
 
 export default {

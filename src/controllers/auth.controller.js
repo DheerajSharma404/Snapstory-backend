@@ -18,10 +18,9 @@ const signUp = async (req, res) => {
 
 const signIn = async (req, res) => {
   try {
-    const token = await userService.signIn(req.body);
-    res.cookie("x-access-token", token, { maxAge: 86400000 });
+    const user = await userService.signIn(req.body);
     SuccessResponse.message = "User successfully signed in.";
-    SuccessResponse.data = true;
+    SuccessResponse.data = user;
     return res.status(StatusCodes.OK).json(SuccessResponse);
   } catch (error) {
     ErrorResponse.error = error;
@@ -32,8 +31,7 @@ const signIn = async (req, res) => {
 const signOut = async (req, res) => {
   try {
     const user = await userService.getUserByUsername(req.user.username);
-    res.clearCookie("x-access-token");
-    SuccessResponse.message = "User successfully sign out";
+    SuccessResponse.message = "User successfully signed out";
     SuccessResponse.data = user;
     return res.status(StatusCodes.OK).json(SuccessResponse);
   } catch (error) {
@@ -42,14 +40,16 @@ const signOut = async (req, res) => {
   }
 };
 
-const validateToken = async (req, res) => {
+const validateUser = async (req, res) => {
   try {
     const user = await userService.getUserByUsername(req.user.username);
-    SuccessResponse.message = "Fetched user successfully";
+    SuccessResponse.message = "Successfully validated user.";
     SuccessResponse.data = user;
     return res.status(StatusCodes.OK).json(SuccessResponse);
   } catch (error) {
-    return res.status(StatusCodes.BAD_REQUEST).json(ErrorResponse);
+    ErrorResponse.error;
+    ErrorResponse.message = error?.message;
+    return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json(ErrorResponse);
   }
 };
 
@@ -57,5 +57,5 @@ export default {
   signUp,
   signIn,
   signOut,
-  validateToken,
+  validateUser,
 };

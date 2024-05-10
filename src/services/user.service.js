@@ -1,4 +1,6 @@
 import { StatusCodes } from "http-status-codes";
+import jwt from "jsonwebtoken";
+import { ServerConfig } from "../config/index.js";
 import { UserRepository } from "../repositories/index.js";
 import AppError from "../utils/error/app.error.js";
 
@@ -11,7 +13,6 @@ class UserService {
       const user = await this.userRepository.findBy({ username: username });
       return user;
     } catch (error) {
-      console.log(error);
       throw error;
     }
   }
@@ -45,11 +46,37 @@ class UserService {
         throw new AppError("Invalid Credential", StatusCodes.UNAUTHORIZED);
       }
       const token = user.generateJWT();
-      return token;
+      return { userId: user._id, username: user.username, token };
     } catch (error) {
       if (error instanceof AppError) throw error;
       throw new AppError(
         "Something went wrong while sign in.",
+        StatusCodes.INTERNAL_SERVER_ERROR
+      );
+    }
+  }
+  async isAuthenticated(token) {
+    try {
+      if (!token) {
+        throw new AppError("Missing JWT token", StatusCodes.BAD_REQUEST);
+      }
+      const response = jwt.verify(token, ServerConfig.JWT_SECRET);
+
+      const user = await this.userRepository.get(response.id);
+      if (!user) {
+        throw new AppError("No user found", StatusCodes.BAD_REQUEST);
+      }
+      return user;
+    } catch (error) {
+      if (error instanceof AppError) throw error;
+      if (error.name === "JsonWebTokenError") {
+        throw new AppError("Invaid JWT Token", StatusCodes.BAD_REQUEST);
+      }
+      if (error.name === "TokenExpiredError") {
+        throw new AppError("JWT token expired", StatusCodes.BAD_REQUEST);
+      }
+      throw new AppError(
+        "Something went wrong",
         StatusCodes.INTERNAL_SERVER_ERROR
       );
     }

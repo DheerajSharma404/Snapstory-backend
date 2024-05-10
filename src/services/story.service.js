@@ -58,13 +58,16 @@ class StoryService {
   async editStory(id, data, userId) {
     try {
       const oldStory = await this.storyRepository.get(id);
-      if (!(String(oldStory.userId) === String(userId))) {
+
+      if (String(oldStory.userId) !== String(userId)) {
         throw new AppError(
           "User does not match, unable to update the story.",
           StatusCodes.UNAUTHORIZED
         );
       }
+
       const newStory = await this.storyRepository.update(id, data);
+
       return newStory;
     } catch (error) {
       if (error instanceof AppError) throw error;
@@ -76,26 +79,29 @@ class StoryService {
   }
 
   async toggleBookmarkedStory(storyId, userId) {
-    console.log(storyId, userId);
     try {
       const story = await this.storyRepository.get(storyId);
-      console.log(story);
+
       if (!story) {
         throw new AppError("Invalid story id.", StatusCodes.BAD_REQUEST);
       }
+
       const user = await this.userRepository.get(userId);
-      console.log("user", user);
+
       if (!user) {
         throw new AppError("Invalid user.", StatusCodes.UNAUTHORIZED);
       }
+
       if (story.bookmarkUser.includes(userId)) {
         story.bookmarkUser.pull(userId);
-        console.log(user);
+        story.isBookmarked = false;
         await story.save();
       } else {
         story.bookmarkUser.push(userId);
+        story.isBookmarked = true;
         await story.save();
       }
+
       return true;
     } catch (error) {
       if (error instanceof AppError) throw error;
@@ -109,7 +115,6 @@ class StoryService {
   async getUserWithBookmarkStories(userId) {
     try {
       const response = await this.storyRepository.getBookmarkStories(userId);
-      console.log(response);
       return response;
     } catch (error) {
       throw new AppError(
@@ -119,25 +124,39 @@ class StoryService {
     }
   }
 
+  async getUserStories(userId){
+    try {
+      const response = await this.storyRepository.getUserStory(userId);
+      return response;
+    } catch (error) {
+      throw new AppError("Something went wrong while fetching user stories.", StatusCodes.INTERNAL_SERVER_ERROR);
+      
+    }
+  }
+
   async toggleStoryLike(storyId, userId) {
     try {
       const story = await this.storyRepository.get(storyId);
+
       if (!story) {
         throw new AppError("Invalid story id.", StatusCodes.BAD_REQUEST);
       }
       const user = await this.userRepository.get(userId);
-      console.log("user", user);
+
       if (!user) {
         throw new AppError("Invalid user.", StatusCodes.UNAUTHORIZED);
       }
+
       if (story.likes.includes(userId)) {
         story.likes.pull(userId);
-        console.log(user);
+        story.isLiked = false;
         await story.save();
       } else {
         story.likes.push(userId);
+        story.isLiked = true;
         await story.save();
       }
+
       return true;
     } catch (error) {
       if (error instanceof AppError) throw error;

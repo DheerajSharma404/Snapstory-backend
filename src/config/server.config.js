@@ -20,6 +20,6 @@ export default {
   MONGODB_URI: process.env.MONGODB_URI,
   SALT_ROUND: process.env.SALT_ROUND,
   JWT_SECRET: process.env.JWT_SECRET,
-  JWT_EXPIRES_IN: process.env.JWT_EXPIRES_IN,
+  // JWT_EXPIRES_IN: process.env.JWT_EXPIRES_IN,
   connect,
 };

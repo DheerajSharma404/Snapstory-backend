@@ -36,7 +36,7 @@ UserSchema.methods.generateJWT = function generate() {
   return jwt.sign(
     { id: this._id, username: this.username },
     ServerConfig.JWT_SECRET,
-    { expiresIn: ServerConfig.JWT_EXPIRES_IN }
+    // { expiresIn: ServerConfig.JWT_EXPIRES_IN }
   );
 };
 
